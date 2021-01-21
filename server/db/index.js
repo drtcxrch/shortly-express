@@ -1,11 +1,15 @@
+const dotenv = require('dotenv');
 const mysql = require('mysql');
 const createTables = require('./config');
 const Promise = require('bluebird');
 const database = 'shortly';
 
+// Load env vars
+dotenv.config({ path: './config/config.env' });
+
 const connection = mysql.createConnection({
-  user: 'student',
-  password: 'student'
+  user: process.env.DB_USER, //'root',
+  password: process.env.DB_PASSWORD //'sdAvuQ0t2S!G%J',
 });
 
 const db = Promise.promisifyAll(connection, { multiArgs: true });
@@ -17,3 +21,8 @@ db.connectAsync()
   .then(() => createTables(db));
 
 module.exports = db;
+
+
+// mysql.server start
+// mysql.server stop
+// mysql -u root -p

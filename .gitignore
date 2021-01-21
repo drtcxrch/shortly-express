@@ -8,3 +8,6 @@ docs
 .floobit
 .floo
 .flooignore
+
+# mysql password
+config/config.env

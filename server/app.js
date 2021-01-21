@@ -56,6 +56,7 @@ app.post('/signup', (req, res, next) => {
     .then(user => {
       if (user) {
         res.redirect('/signup');
+
       } else {
         models.Users.create({ username, password })
           .then(res.redirect('/'));
@@ -83,8 +84,6 @@ app.post('/login', (req, res, next) => {
       }
     });
 });
-
-
 
 
 app.post('/links',

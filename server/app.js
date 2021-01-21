@@ -48,21 +48,40 @@ app.get('/links',
       });
   });
 
-// signup post
+// SIGNUP POST!!!!!!!!
 app.post('/signup', (req, res, next) => {
   let { username, password } = req.body;
 
-  if (!models.Users.get({ username })) {
-    res.redirect('signup');
-  }
-
-  models.Users.create({ username, password })
-    .then(res.redirect('/'));
+  models.Users.get({ username })
+    .then(user => {
+      if (user) {
+        res.redirect('/signup');
+      } else {
+        models.Users.create({ username, password })
+          .then(res.redirect('/'));
+      }
+    })
+    .catch(err => console.error(err));
 });
 
-// login post
-app.post('/login', (req, res, next) => {
 
+// LOGIN POST!!!!!!!!
+app.post('/login', (req, res, next) => {
+  let { username, password } = req.body;
+
+  models.Users.get({ username })
+    .then(user => {
+      if (user) {
+        if (models.Users.compare(password, user.password, user.salt)) {
+          res.redirect('/');
+        } else {
+          res.redirect('/login');
+        }
+
+      } else {
+        res.redirect('/login');
+      }
+    });
 });
 
 

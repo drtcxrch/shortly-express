@@ -135,6 +135,7 @@ describe('', function () {
         db.query(queryString, function (err, rows) {
           if (err) { done(err); }
           var user = rows[0];
+          // console.log('look at me ************', rows);
           expect(user).to.exist;
           expect(user.username).to.equal('Samantha');
           done();
@@ -158,6 +159,7 @@ describe('', function () {
         db.query(queryString, function (err, rows) {
           if (err) { return done(err); }
           var user = rows[0];
+          // console.log('look at me ************', rows);
           expect(user.password).to.exist;
           expect(user.password).to.not.equal('Samantha');
           done();

@@ -5,8 +5,8 @@ const parseCookies = (req, res, next) => {
     req.cookies = {};
     next();
   } else {
-    cookie = cookie.split(';').map(item => item.split('='));
     let result = {};
+    cookie = cookie.split(';').map(item => item.split('='));
 
     for (let i = 0; i < cookie.length; i++) {
       let key = cookie[i][0].trim();

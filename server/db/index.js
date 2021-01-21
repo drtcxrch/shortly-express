@@ -8,8 +8,8 @@ const database = 'shortly';
 dotenv.config({ path: './config/config.env' });
 
 const connection = mysql.createConnection({
-  user: process.env.DB_USER, //'root',
-  password: process.env.DB_PASSWORD //'sdAvuQ0t2S!G%J',
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD
 });
 
 const db = Promise.promisifyAll(connection, { multiArgs: true });

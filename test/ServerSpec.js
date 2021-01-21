@@ -36,8 +36,8 @@ describe('', function () {
     /* TODO: Update user and password if different than on your local machine            */
     /*************************************************************************************/
     db = mysql.createConnection({
-      user: process.env.DB_USER, //'root',
-      password: process.env.DB_PASSWORD, //'sdAvuQ0t2S!G%J',
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
       database: 'shortly'
     });
     /**************************************************************************************/

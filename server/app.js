@@ -61,8 +61,7 @@ app.post('/signup', (req, res, next) => {
         models.Users.create({ username, password })
           .then(res.redirect('/'));
       }
-    })
-    .catch(err => console.error(err));
+    });
 });
 
 

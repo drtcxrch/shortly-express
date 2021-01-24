@@ -6,6 +6,7 @@ module.exports.createSession = (req, res, next) => {
 
   if (!req.cookies.shortlyid) {
     // create a hash and store it in the sessions db.
+    console.log('look at me ********* 1');
     models.Sessions.create()
       // then retrieve the data from the sessions db.
       .then(data => models.Sessions.get({ id: data.insertId }))
@@ -14,8 +15,6 @@ module.exports.createSession = (req, res, next) => {
         req.session = databaseData;
         // and set the cookie to the header using res.cookie.
         res.cookie('shortlyid', req.session.hash);
-        // console.log(databaseData);
-
         next();
       });
 
@@ -24,25 +23,24 @@ module.exports.createSession = (req, res, next) => {
     // retrieve the data from the sessions db.
     models.Sessions.get({ hash: req.cookies.shortlyid })
       .then(databaseData => {
-        if (databaseData && databaseData.userId !== null) {
-          req.session = databaseData;
 
-          console.log(req);
-          models.Users.get({ id: databaseData.userId })
-            .then(userData => {
-              req.session.username = userData.username;
-              next();
-            });
+        if (databaseData) {
+          console.log('look at me ********* 2');
+          req.session = databaseData;
+          next();
 
           // if the data does NOT exist...
         } else {
           // repeat the steps taken when a hash did NOT exist above.
+          console.log('look at me ********* 3');
           models.Sessions.create()
-            .then(data => models.Sessions.get({ id: data.insertId }))
-            .then(databaseData => {
-              req.session = databaseData;
-              res.cookie('shortlyid', req.session.hash);
-              next();
+            .then(results => {
+              models.Sessions.get({ id: results.insertId })
+                .then(databaseData => {
+                  req.session = databaseData;
+                  res.cookie('shortlyid', databaseData.hash);
+                  next();
+                });
             });
         }
       });
@@ -50,20 +48,24 @@ module.exports.createSession = (req, res, next) => {
 };
 
 
-// accesses the parsed cookies on the request,
-// looks up the user data related to that session,
-// and assigns an object to a session property on the request that contains relevant user information. (Ask yourself: what information about the user
-// would you want to keep in this session object?)
-
-// CHECK! An incoming request with no cookies should generate a session with a unique hash and store it the sessions database.
-// CHECK! The middleware function should use this unique hash to set a cookie in the response headers. (Ask yourself: How do I set cookies using Express?)
-
-// CHECK! If an incoming request has a cookie, the middleware should verify that the cookie is valid (i.e., it is a session that is stored in your database).
-// CHECK If an incoming cookie is not valid, what do you think you should do with that session and cookie?
-
-
-
 //************************************************************/
 // Add additional authentication middleware functions below
 //************************************************************/
+
+module.exports.verifySession = (req, res, next) => {
+  if (!models.Sessions.isLoggedIn(req.session)) {
+    res.redirect('/login');
+  } else {
+    next();
+  }
+};
+
+// LINKS AND CREATE!!!!! Add a verifySession helper function to all server routes that require login,
+// CHECK!!!!! redirect the user to a login page as needed.
+// Require users to log in to see shortened links and create new ones.
+// Do NOT require the user to login when using a previously shortened link.
+
+// Give the user a way to log out.
+// What will this need to do to the server session and the cookie saved to the client's browser?
+// we have to destroy the session and cookie
 

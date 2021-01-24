@@ -470,6 +470,8 @@ describe('', function () {
 
         createSession(requestWithMaliciousCookie, response, function () {
           var cookie = response.cookies.shortlyid;
+
+
           expect(cookie).to.exist;
           expect(cookie).to.not.equal(maliciousCookieHash);
           done();
@@ -498,13 +500,17 @@ describe('', function () {
 
     beforeEach(function (done) {
       cookieJar = request.jar();
+      console.log('this is cookieJar!!!!!!!!!!/n', cookieJar);
+      console.log('---------------------------');
       requestWithSession = request.defaults({ jar: cookieJar });
       done();
     });
 
     it('saves a new session when the server receives a request', function (done) {
+      console.log('-------------');
       requestWithSession('http://127.0.0.1:4568/', function (err, res, body) {
         if (err) { return done(err); }
+        console.log('-------------');
         var queryString = 'SELECT * FROM sessions';
         db.query(queryString, function (error, sessions) {
           if (error) { return done(error); }

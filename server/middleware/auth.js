@@ -6,7 +6,7 @@ module.exports.createSession = (req, res, next) => {
 
   if (!req.cookies.shortlyid) {
     // create a hash and store it in the sessions db.
-    console.log('look at me ********* 1');
+    // console.log('look at me ********* 1');
     models.Sessions.create()
       // then retrieve the data from the sessions db.
       .then(data => models.Sessions.get({ id: data.insertId }))
@@ -25,14 +25,14 @@ module.exports.createSession = (req, res, next) => {
       .then(databaseData => {
 
         if (databaseData) {
-          console.log('look at me ********* 2');
+          // console.log('look at me ********* 2');
           req.session = databaseData;
           next();
 
           // if the data does NOT exist...
         } else {
           // repeat the steps taken when a hash did NOT exist above.
-          console.log('look at me ********* 3');
+          // console.log('look at me ********* 3');
           models.Sessions.create()
             .then(results => {
               models.Sessions.get({ id: results.insertId })

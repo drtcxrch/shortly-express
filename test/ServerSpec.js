@@ -36,8 +36,8 @@ describe('', function () {
     /* TODO: Update user and password if different than on your local machine            */
     /*************************************************************************************/
     db = mysql.createConnection({
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
+      user: 'root',
+      password: '',
       database: 'shortly'
     });
     /**************************************************************************************/
@@ -58,6 +58,17 @@ describe('', function () {
   describe('Database Schema:', function () {
     it('contains a users table', function (done) {
       var queryString = 'SELECT * FROM users';
+
+      db.query(queryString, function (err, results) {
+        if (err) { return done(err); }
+
+        expect(results).to.deep.equal([]);
+        done();
+      });
+    });
+
+    it('contains a links table', function (done) {
+      var queryString = 'SELECT * FROM links';
 
       db.query(queryString, function (err, results) {
         if (err) { return done(err); }
@@ -223,6 +234,23 @@ describe('', function () {
     });
 
     it('Logs in existing users', function (done) {
+      var options = {
+        'method': 'POST',
+        'uri': 'http://127.0.0.1:4568/login',
+        'json': {
+          'username': 'Samantha',
+          'password': 'Samantha'
+        }
+      };
+
+      request(options, function (error, res, body) {
+        if (error) { return done(error); }
+        expect(res.headers.location).to.equal('/');
+        done();
+      });
+    });
+
+    it('Logs in user after entering correct password', function (done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/login',
@@ -500,17 +528,17 @@ describe('', function () {
 
     beforeEach(function (done) {
       cookieJar = request.jar();
-      console.log('this is cookieJar!!!!!!!!!!/n', cookieJar);
-      console.log('---------------------------');
+      // console.log('this is cookieJar!!!!!!!!!!/n', cookieJar);
+      // console.log('---------------------------');
       requestWithSession = request.defaults({ jar: cookieJar });
       done();
     });
 
     it('saves a new session when the server receives a request', function (done) {
-      console.log('-------------');
+      // console.log('-------------');
       requestWithSession('http://127.0.0.1:4568/', function (err, res, body) {
         if (err) { return done(err); }
-        console.log('-------------');
+        // console.log('-------------');
         var queryString = 'SELECT * FROM sessions';
         db.query(queryString, function (error, sessions) {
           if (error) { return done(error); }
@@ -549,6 +577,35 @@ describe('', function () {
         });
       });
     });
+
+    it('allows the user to log out', function (done) {
+      addUser(function (err, res, body) {
+        if (err) { return done(err); }
+        var cookies = cookieJar.getCookies('http://127.0.0.1:4568/');
+        var cookieValue = cookies[0].value;
+
+        requestWithSession('http://127.0.0.1:4568/logout', function (error, response, resBody) {
+          if (error) { return done(error); }
+          // console.log('***response**', response, '*****resBody***', resBody);
+          var cookies = cookieJar.getCookies('http://127.0.0.1:4568/');
+          var newCookieValue = cookies[0].value;
+          expect(cookieValue).to.not.equal(newCookieValue);
+
+          // var queryString = 'SELECT * FROM sessions WHERE hash = ?';
+          var queryString = `
+          SELECT users.username FROM users, sessions
+          WHERE sessions.hash = ? AND users.id = sessions.userId
+        `;
+          db.query(queryString, cookieValue, function (error2, sessions) {
+            // console.log(sessions);
+            if (error2) { return done(error2); }
+            expect(sessions.length).to.equal(0);
+            done();
+          });
+        });
+      });
+    });
+
 
     it('destroys session and cookie when logs out', function (done) {
       addUser(function (err, res, body) {
@@ -659,6 +716,17 @@ describe('', function () {
         });
       });
 
+      it('New links have not been visited', function (done) {
+
+        requestWithSession(options, function (error, res, body) {
+          if (error) { return done(error); }
+          // console.log('!!!!res.body', res.body);
+          expect(res.body.url).to.equal('http://www.google.com/');
+          expect(res.body.visits).to.equal(0);
+          done();
+        });
+      });
+
       it('New links create a database entry', function (done) {
         requestWithSession(options, function (error, res, body) {
           if (error) { return done(error); }
@@ -716,6 +784,7 @@ describe('', function () {
         };
 
         requestWithSession(options, function (error, res, body) {
+          // console.log('!!!!res', res.body.visits);
           if (error) { return done(error); }
           var code = res.body.code;
           expect(code).to.equal(link.code);
